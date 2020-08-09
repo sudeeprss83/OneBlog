@@ -8,7 +8,10 @@ async function profile(req, res) {
 
 // fetching all posts
 async function myPosts(req, res) {
-  const posts = await Post.find({ postedBy: req.user.id });
+  const posts = await Post.find({ postedBy: req.user.id }).populate(
+    "postedBy",
+    "username"
+  );
   res.status(200).json({ posts });
 }
 
@@ -31,23 +34,37 @@ async function newPost(req, res) {
 
 //edit the post
 async function editPost(req, res) {
-  await Post.updateOne(
-    { _id: req.params.id },
-    {
-      $set: {
-        title: req.body.title,
-        image: `http://localhost:${process.env.PORT}/` + req.file.path,
-        description: req.body.description,
-      },
-    }
-  );
-  res.status(200).json({ message: "Your post has been updated" });
+  const post = await Post.findOne({ _id: req.params.id });
+  if (req.user.id == post.postedBy) {
+    await Post.updateOne(
+      { _id: req.params.id },
+      {
+        $set: {
+          title: req.body.title,
+          image: `http://localhost:${process.env.PORT}/` + req.file.path,
+          description: req.body.description,
+        },
+      }
+    );
+    res.status(200).json({ message: "Your post has been updated" });
+  } else {
+    res
+      .status(401)
+      .json({ message: "You are not authorized to update someone's post" });
+  }
 }
 
 //delete the post
 async function deletePost(req, res) {
-  await Post.deleteOne({ _id: req.params.id });
-  res.status(200).json({ message: "Your post has been deleted" });
+  const post = await Post.findOne({ _id: req.params.id });
+  if (req.user.id === post.postedBy) {
+    await Post.deleteOne({ _id: req.params.id });
+    res.status(200).json({ message: "Your post has been deleted" });
+  } else {
+    res
+      .status(401)
+      .json({ message: "You are not authorized to delete someone's post" });
+  }
 }
 
 module.exports = {
