@@ -5,6 +5,7 @@ const User = require("../models/user");
 const Token = require("../models/token");
 
 async function signup(req, res) {
+  console.log(req.body);
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
     res.status(401).json({ message: "all fields required" });
