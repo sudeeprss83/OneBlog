@@ -6,14 +6,14 @@ function protect(req, res, next) {
     const token = authHeader.split(" ")[1];
     jwt.verify(token, process.env.ACCESS_SECRET, (err, user) => {
       if (err) {
-        res.status(401).json({ message: err.message });
+        res.json({ status: 401, message: err.message });
       } else {
         req.user = user;
         next();
       }
     });
   } else {
-    res.status(401).json({ message: "Please login to access this route" });
+    res.json({ status: 401, message: "Please login to access this route" });
   }
 }
 

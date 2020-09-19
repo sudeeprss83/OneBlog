@@ -4,10 +4,11 @@ const md5 = require("md5");
 const User = require("../models/user");
 const Token = require("../models/token");
 
+//user signup route
 async function signup(req, res) {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
-    res.status(401).json({ message: "all fields required" });
+    res.json({ status: 401, message: "all fields required" });
   } else {
     const user = await User.findOne({ email });
     if (!user) {
@@ -18,49 +19,48 @@ async function signup(req, res) {
       }).save();
       res.status(200).json({ message: "user saved", newUser });
     } else {
-      res.status(401).json({ message: "user already exits" });
+      res.json({ status: 401, message: "user already exits" });
     }
   }
 }
 
+//user login route
 async function login(req, res) {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(401).json({ message: "all fields required" });
+    res.json({ status: 401, message: "all fields required" });
   } else {
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).json({ message: "email not found" });
+      res.json({ status: 401, message: "email not found" });
     } else {
       if (user.password === md5(password)) {
         const accessToken = generateAccessToken({ id: user._id });
         const refreshToken = generateRefreshToken({ id: user._id });
         await new Token({ token: refreshToken, userId: user._id }).save();
-        res.status(200).json({ accessToken, refreshToken });
+        res.json({ status: 200, accessToken, refreshToken });
       } else {
-        res.status(401).json({ message: "username or password did not match" });
+        res.json({
+          status: 401,
+          message: "username or password did not match",
+        });
       }
     }
   }
 }
 
-async function logout(req, res) {
-  await Token.deleteOne({ userId: req.user.id });
-  res.status(200).json({ message: "user logged out" });
-}
-
+//generates new access token
 async function newAccessToken(req, res) {
   const authHeader = req.headers.authorization;
   if (authHeader) {
     const token = authHeader.split(" ")[1];
     const refToken = await Token.findOne({ token: token });
     if (!refToken) {
-      res.status(401).json({ message: "something went wrong" });
+      res.json({ status: 401, message: "something went wrong" });
     } else {
       jwt.verify(refToken.token, process.env.REFRESH_SECRET, (err, user) => {
-        console.log(refToken);
         if (err) {
-          res.status(401).json({ message: err.message });
+          res.json({ status: 401, message: err.message });
         } else {
           const accessToken = generateAccessToken({ id: user.id });
           const refreshToken = generateRefreshToken({ id: user.id });
@@ -86,6 +86,5 @@ function generateRefreshToken(user) {
 module.exports = {
   signup,
   login,
-  logout,
   newAccessToken,
 };

@@ -5,7 +5,6 @@ const route = require("../middlewares/accessRoute");
 
 authRouter.post("/signup", authController.signup);
 authRouter.post("/login", authController.login);
-authRouter.post("/logout", route.protect, authController.logout);
 authRouter.post("/token", authController.newAccessToken);
 
 module.exports = authRouter;

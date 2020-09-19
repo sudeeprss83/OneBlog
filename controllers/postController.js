@@ -1,5 +1,5 @@
 const Post = require("../models/post");
-const multer = require("multer");
+const Token = require("../models/token");
 
 // profile page
 async function profile(req, res) {
@@ -48,9 +48,10 @@ async function editPost(req, res) {
     );
     res.status(200).json({ message: "Your post has been updated" });
   } else {
-    res
-      .status(401)
-      .json({ message: "You are not authorized to update someone's post" });
+    res.json({
+      status: 401,
+      message: "You are not authorized to edit someone's post",
+    });
   }
 }
 
@@ -61,10 +62,17 @@ async function deletePost(req, res) {
     await Post.deleteOne({ _id: req.params.id });
     res.status(200).json({ message: "Your post has been deleted" });
   } else {
-    res
-      .status(401)
-      .json({ message: "You are not authorized to delete someone's post" });
+    res.json({
+      status: 401,
+      message: "You are not authorized to delete someone's post",
+    });
   }
+}
+
+//user log-out route
+async function logout(req, res) {
+  await Token.deleteOne({ userId: req.user.id });
+  res.status(200).json({ message: "user logged out" });
 }
 
 module.exports = {
@@ -74,4 +82,5 @@ module.exports = {
   newPost,
   editPost,
   deletePost,
+  logout
 };

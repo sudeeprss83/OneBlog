@@ -33,6 +33,8 @@ profileRouter.get("/my-posts", route.protect, postController.myPosts);
 
 profileRouter.get("/post/:id", route.protect, postController.onePost);
 
+profileRouter.post("/logout", route.protect, postController.logout);
+
 profileRouter.post(
   "/create-post",
   route.protect,
